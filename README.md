@@ -1,4 +1,4 @@
-# Employee Productivity Prediction
+# Employee Performance Prediction
 
 This project is a machine learning application designed to predict the productivity of employees in the garment industry based on various work-related attributes. The application is built with a Flask backend and provides a simple web interface for users to input data and receive a productivity prediction.
 
