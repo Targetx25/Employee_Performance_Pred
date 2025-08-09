@@ -26,7 +26,7 @@ except Exception as e:
 
 # 4. Define the expected model columns from the training script
 # This is crucial for correctly preparing the prediction data after one-hot encoding.
-# NOTE: 'day_Monday' is removed as it was dropped during training (drop_first=True)
+# The order must EXACTLY match the order of columns in the DataFrame used for training.
 MODEL_COLUMNS = [
     'team', 'targeted_productivity', 'smv', 'over_time', 'incentive',
     'idle_time', 'idle_men', 'no_of_style_change', 'no_of_workers', 'wip',
@@ -219,7 +219,8 @@ def predict():
             input_processed = input_df_encoded.reindex(columns=MODEL_COLUMNS, fill_value=0)
 
             # --- Prediction ---
-            prediction = model.predict(input_processed)
+            # Convert the final DataFrame to a NumPy array to match the training data type
+            prediction = model.predict(input_processed.values)
             pred_value = round(float(prediction[0]), 3)
             score_text = str(pred_value)
 
