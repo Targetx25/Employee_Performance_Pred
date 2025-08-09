@@ -40,7 +40,7 @@ To run this project on your local machine, follow these steps:
 
 ### 1. Clone the Repository
 ```bash
-git clone [https://github.com/your-username/Employee_Performance_Pred.git](https://github.com/your-username/Employee_Performance_Pred.git)
+git clone [https://github.com/TargetX25/Employee_Performance_Pred.git](https://github.com/targetx25/Employee_Performance_Pred.git)
 cd Employee_Performance_Pred
 ```
 
@@ -83,5 +83,5 @@ This application is deployed on Render and can be accessed at the following URL:
 ---
 
 ## 📸 Screenshot
-
+!(https://ibb.co/CpJT4THT)
 
