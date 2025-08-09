@@ -24,12 +24,15 @@ except Exception as e:
     print(f"❌ An error occurred while loading the model: {e}")
     model = None
 
-# 4. Define Mappings for Categorical Features
-# This mimics the LabelEncoder used in the training notebook.
-# The numeric values are based on alphabetical sorting, which is how LabelEncoder works.
-QUARTER_MAP = {'Quarter1': 0, 'Quarter2': 1, 'Quarter3': 2, 'Quarter4': 3, 'Quarter5': 4}
-DEPARTMENT_MAP = {'finishing': 0, 'sewing': 1}
-DAY_MAP = {'Monday': 0, 'Saturday': 1, 'Sunday': 2, 'Thursday': 3, 'Tuesday': 4, 'Wednesday': 5}
+# 4. Define the expected model columns from the training script
+# This is crucial for correctly preparing the prediction data after one-hot encoding.
+MODEL_COLUMNS = [
+    'team', 'targeted_productivity', 'smv', 'over_time', 'incentive',
+    'idle_time', 'idle_men', 'no_of_style_change', 'no_of_workers', 'wip',
+    'month', 'quarter_Quarter2', 'quarter_Quarter3', 'quarter_Quarter4',
+    'quarter_Quarter5', 'department_sewing', 'day_Monday', 'day_Saturday',
+    'day_Sunday', 'day_Thursday', 'day_Tuesday', 'day_Wednesday'
+]
 
 
 # --- HTML TEMPLATES ---
@@ -58,40 +61,6 @@ HOME_TEMPLATE = """
             <form action="/" method="post">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     
-                    <!-- Categorical Features -->
-                    <div>
-                        <label for="quarter" class="block text-sm font-medium text-gray-700">Quarter</label>
-                        <select name="quarter" required class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="Quarter1">Quarter 1</option>
-                            <option value="Quarter2">Quarter 2</option>
-                            <option value="Quarter3">Quarter 3</option>
-                            <option value="Quarter4">Quarter 4</option>
-                            <option value="Quarter5">Quarter 5</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="department" class="block text-sm font-medium text-gray-700">Department</label>
-                        <select name="department" required class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="sewing">Sewing</option>
-                            <option value="finishing">Finishing</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="day" class="block text-sm font-medium text-gray-700">Day of the Week</label>
-                        <select name="day" required class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="Monday">Monday</option>
-                            <option value="Tuesday">Tuesday</option>
-                            <option value="Wednesday">Wednesday</option>
-                            <option value="Thursday">Thursday</option>
-                            <option value="Saturday">Saturday</option>
-                            <option value="Sunday">Sunday</option>
-                        </select>
-                    </div>
-                     <div>
-                        <label for="month" class="block text-sm font-medium text-gray-700">Month</label>
-                        <input type="number" name="month" required class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500" placeholder="e.g., 1 for January">
-                    </div>
-
                     <!-- Core Metrics -->
                     <div>
                         <label for="team" class="block text-sm font-medium text-gray-700">Team Number</label>
@@ -108,6 +77,40 @@ HOME_TEMPLATE = """
                     <div>
                         <label for="no_of_workers" class="block text-sm font-medium text-gray-700">Number of Workers</label>
                         <input type="number" step="0.1" name="no_of_workers" required class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500" placeholder="e.g., 59.0">
+                    </div>
+
+                    <!-- Categorical Features -->
+                    <div>
+                        <label for="department" class="block text-sm font-medium text-gray-700">Department</label>
+                        <select name="department" required class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="sewing">Sewing</option>
+                            <option value="finishing">Finishing</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="day" class="block text-sm font-medium text-gray-700">Day of the Week</label>
+                        <select name="day" required class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="Saturday">Saturday</option>
+                            <option value="Sunday">Sunday</option>
+                            <option value="Monday">Monday</option>
+                            <option value="Tuesday">Tuesday</option>
+                            <option value="Wednesday">Wednesday</option>
+                            <option value="Thursday">Thursday</option>
+                        </select>
+                    </div>
+                     <div>
+                        <label for="quarter" class="block text-sm font-medium text-gray-700">Quarter</label>
+                        <select name="quarter" required class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="Quarter1">Quarter 1</option>
+                            <option value="Quarter2">Quarter 2</option>
+                            <option value="Quarter3">Quarter 3</option>
+                            <option value="Quarter4">Quarter 4</option>
+                            <option value="Quarter5">Quarter 5</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="month" class="block text-sm font-medium text-gray-700">Month</label>
+                        <input type="number" name="month" required class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500" placeholder="e.g., 1 for January">
                     </div>
 
                     <!-- Additional Metrics -->
@@ -131,6 +134,10 @@ HOME_TEMPLATE = """
                          <div>
                             <label for="no_of_style_change" class="block text-sm font-medium text-gray-700">Style Changes</label>
                             <input type="number" name="no_of_style_change" required class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm p-3" value="0">
+                        </div>
+                         <div>
+                            <label for="wip" class="block text-sm font-medium text-gray-700">Work In Progress (WIP)</label>
+                            <input type="number" name="wip" required class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-lg shadow-sm p-3" placeholder="e.g., 1108">
                         </div>
                     </div>
                 </div>
@@ -176,42 +183,42 @@ def predict():
     score_text = ""
     if request.method == 'POST':
         if model is None:
+            # Handle case where model is not loaded
             return "Model not loaded. Please check server logs.", 500
 
         try:
-            # --- Data Collection and Transformation ---
-            # Get raw data from the form
-            quarter_str = request.form['quarter']
-            department_str = request.form['department']
-            day_str = request.form['day']
+            # --- Data Collection from Form ---
+            # Collect all form data into a dictionary
+            input_data = {
+                'team': [int(request.form['team'])],
+                'targeted_productivity': [float(request.form['targeted_productivity'])],
+                'smv': [float(request.form['smv'])],
+                'over_time': [int(request.form['over_time'])],
+                'incentive': [int(request.form['incentive'])],
+                'idle_time': [float(request.form['idle_time'])],
+                'idle_men': [int(request.form['idle_men'])],
+                'no_of_style_change': [int(request.form['no_of_style_change'])],
+                'no_of_workers': [float(request.form['no_of_workers'])],
+                'wip': [float(request.form['wip'])],
+                'month': [int(request.form['month'])],
+                'quarter': [request.form['quarter']],
+                'department': [request.form['department']],
+                'day': [request.form['day']]
+            }
             
-            # Map string values to the integer codes the model expects
-            quarter = QUARTER_MAP.get(quarter_str, 0)
-            department = DEPARTMENT_MAP.get(department_str, 0)
-            day = DAY_MAP.get(day_str, 0)
+            # Create a pandas DataFrame from the input data
+            input_df = pd.DataFrame.from_dict(input_data)
 
-            # Get the rest of the numerical data
-            team = int(request.form['team'])
-            targeted_productivity = float(request.form['targeted_productivity'])
-            smv = float(request.form['smv'])
-            over_time = int(request.form['over_time'])
-            incentive = int(request.form['incentive'])
-            idle_time = float(request.form['idle_time'])
-            idle_men = int(request.form['idle_men'])
-            no_of_style_change = int(request.form['no_of_style_change'])
-            no_of_workers = float(request.form['no_of_workers'])
-            month = int(request.form['month'])
-
-            # --- Create Input Array for Prediction ---
-            # The order of features MUST match the training data from the notebook
-            input_features = np.array([[
-                quarter, department, day, team, targeted_productivity, smv,
-                over_time, incentive, idle_time, idle_men, no_of_style_change,
-                no_of_workers, month
-            ]])
+            # --- CRITICAL: Preprocessing Input Data ---
+            # Perform one-hot encoding on the categorical features
+            input_df_encoded = pd.get_dummies(input_df, columns=['quarter', 'department', 'day'])
+            
+            # Reindex the encoded dataframe to match the model's training columns
+            # This ensures all required columns are present and in the correct order, filling missing ones with 0
+            input_processed = input_df_encoded.reindex(columns=MODEL_COLUMNS, fill_value=0)
 
             # --- Prediction ---
-            prediction = model.predict(input_features)
+            prediction = model.predict(input_processed)
             pred_value = round(float(prediction[0]), 3)
             score_text = str(pred_value)
 
@@ -224,13 +231,15 @@ def predict():
                 prediction_text = 'The employee has Low Productivity.'
 
         except Exception as e:
+            # Handle potential errors during prediction
             print(f"Error during prediction: {e}")
             prediction_text = f"Error: Could not process request. Details: {e}"
 
-    # Render the page
+    # Render the page with or without the prediction result
     return render_template_string(HOME_TEMPLATE, prediction_text=prediction_text, score=score_text)
 
 
 # 6. Run the App
 if __name__ == '__main__':
+    # Use a specific port to avoid conflicts
     app.run(debug=True, port=5001)
