@@ -26,11 +26,12 @@ except Exception as e:
 
 # 4. Define the expected model columns from the training script
 # This is crucial for correctly preparing the prediction data after one-hot encoding.
+# NOTE: 'day_Monday' is removed as it was dropped during training (drop_first=True)
 MODEL_COLUMNS = [
     'team', 'targeted_productivity', 'smv', 'over_time', 'incentive',
     'idle_time', 'idle_men', 'no_of_style_change', 'no_of_workers', 'wip',
     'month', 'quarter_Quarter2', 'quarter_Quarter3', 'quarter_Quarter4',
-    'quarter_Quarter5', 'department_sewing', 'day_Monday', 'day_Saturday',
+    'quarter_Quarter5', 'department_sewing', 'day_Saturday',
     'day_Sunday', 'day_Thursday', 'day_Tuesday', 'day_Wednesday'
 ]
 
